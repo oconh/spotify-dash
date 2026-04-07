@@ -26,26 +26,27 @@ def get_spotify_client():
 def get_top_tracks(sp, time_range="medium_term", limit=50):
     results = sp.current_user_top_tracks(limit=limit, time_range=time_range)
     return [{
-        "id": item["id"],
-        "name": item["name"],
-        "artist": item["artists"][0]["name"],
-        "album": item["album"]["name"],
-        "image": item["album"]["images"][1]["url"] if item["album"]["images"] else None,
-        "popularity": item["popularity"],
-        "duration_ms": item["duration_ms"],
-        "preview_url": item["preview_url"],
+        "id": item.get("id"),
+        "name": item.get("name", "Unknown"),
+        "artist": item["artists"][0]["name"] if item.get("artists") else "Unknown",
+        "artist_id": item["artists"][0]["id"] if item.get("artists") else None,
+        "album": item.get("album", {}).get("name", "Unknown"),
+        "image": item["album"]["images"][1]["url"] if item.get("album", {}).get("images") and len(item["album"]["images"]) > 1 else None,
+        "popularity": item.get("popularity", 0),
+        "duration_ms": item.get("duration_ms", 0),
+        "preview_url": item.get("preview_url"),
     } for item in results["items"]]
 
 
 def get_top_artists(sp, time_range="medium_term", limit=50):
     results = sp.current_user_top_artists(limit=limit, time_range=time_range)
     return [{
-        "id": item["id"],
-        "name": item["name"],
-        "genres": item["genres"],
-        "popularity": item["popularity"],
-        "followers": item["followers"]["total"],
-        "image": item["images"][1]["url"] if len(item["images"]) > 1 else None,
+        "id": item.get("id"),
+        "name": item.get("name", "Unknown"),
+        "genres": item.get("genres", []),
+        "popularity": item.get("popularity", 0),
+        "followers": item.get("followers", {}).get("total", 0),
+        "image": item["images"][1]["url"] if item.get("images") and len(item["images"]) > 1 else None,
     } for item in results["items"]]
 
 
@@ -63,12 +64,12 @@ def get_currently_playing(sp):
         if result and result.get("item"):
             item = result["item"]
             return {
-                "name": item["name"],
-                "artist": item["artists"][0]["name"],
-                "album": item["album"]["name"],
-                "image": item["album"]["images"][0]["url"] if item["album"]["images"] else None,
+                "name": item.get("name", "Unknown"),
+                "artist": item["artists"][0]["name"] if item.get("artists") else "Unknown",
+                "album": item.get("album", {}).get("name", "Unknown"),
+                "image": item["album"]["images"][0]["url"] if item.get("album", {}).get("images") else None,
                 "progress_ms": result.get("progress_ms", 0),
-                "duration_ms": item["duration_ms"],
+                "duration_ms": item.get("duration_ms", 0),
                 "is_playing": result.get("is_playing", False),
             }
     except Exception:
@@ -79,6 +80,6 @@ def get_currently_playing(sp):
 def get_genres_from_artists(artists):
     genre_counts = {}
     for artist in artists:
-        for genre in artist["genres"]:
+        for genre in artist.get("genres", []):
             genre_counts[genre] = genre_counts.get(genre, 0) + 1
     return dict(sorted(genre_counts.items(), key=lambda x: x[1], reverse=True))
