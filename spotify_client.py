@@ -50,14 +50,6 @@ def get_top_artists(sp, time_range="medium_term", limit=50):
     } for item in results["items"]]
 
 
-def get_audio_features(sp, track_ids):
-    features = []
-    for i in range(0, len(track_ids), 100):
-        batch = sp.audio_features(track_ids[i:i + 100])
-        features.extend([f for f in batch if f])
-    return features
-
-
 def get_currently_playing(sp):
     try:
         result = sp.current_playback()
