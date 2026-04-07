@@ -390,7 +390,7 @@ def page_genres(time_range):
     ])
 
 
-# ── Routing callback ──────────────────────────────────────────────────────────
+# Routing callback
 @app.callback(
     Output("page-content", "children"),
     Input("url", "pathname"),
@@ -402,13 +402,12 @@ def render_page(pathname, time_range, n):
         "/":            lambda: page_now_playing(n),
         "/top-tracks":  lambda: page_top_tracks(time_range),
         "/top-artists": lambda: page_top_artists(time_range),
-        "/audio-dna":   lambda: page_audio_dna(time_range),
         "/genres":      lambda: page_genres(time_range),
     }
     return routes.get(pathname or "/", lambda: html.P("Page not found."))()
 
 
-# ── Run ───────────────────────────────────────────────────────────────────────
+# Run
 if __name__ == "__main__":
     print("\n Starting Spotify Dashboard...")
     print("   Visit http://127.0.0.1:8888\n")
