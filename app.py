@@ -16,7 +16,7 @@ from spotify_client import (
 load_dotenv()
 
 
-# ── Auth ──────────────────────────────────────────────────────────────────────
+# Auth
 def ensure_authenticated():
     oauth = get_spotify_oauth()
     if not oauth.get_cached_token():
@@ -35,7 +35,7 @@ ensure_authenticated()
 sp = get_spotify_client()
 
 
-# ── Colours & theme ───────────────────────────────────────────────────────────
+# Colours & theme
 COLORS = {
     "bg":      "#0a0a0f",
     "surface": "#12121a",
@@ -53,8 +53,6 @@ PLOTLY_LAYOUT = dict(
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(color=COLORS["text"], family="'DM Sans', sans-serif"),
     colorway=[COLORS["accent"], COLORS["accent2"], COLORS["accent3"]],
-    xaxis=dict(gridcolor=COLORS["border"], zerolinecolor=COLORS["border"]),
-    yaxis=dict(gridcolor=COLORS["border"], zerolinecolor=COLORS["border"]),
     margin=dict(l=20, r=20, t=40, b=20),
 )
 
@@ -65,7 +63,7 @@ TIME_RANGES = {
 }
 
 
-# ── Reusable components ───────────────────────────────────────────────────────
+# Reusable components
 def card(children, style=None):
     base = {
         "background": COLORS["card"],
@@ -92,7 +90,7 @@ def stat_card(label, value, colour=None):
     ])
 
 
-# ── App init ──────────────────────────────────────────────────────────────────
+# App init
 app = dash.Dash(
     __name__,
     external_stylesheets=[
@@ -104,7 +102,7 @@ app = dash.Dash(
 )
 
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
+# Sidebar
 SIDEBAR = html.Div([
     html.Div([
         html.Span("◆", style={"color": COLORS["accent"], "fontSize": "1.4rem"}),
@@ -162,7 +160,7 @@ SIDEBAR = html.Div([
 })
 
 
-# ── Layout ────────────────────────────────────────────────────────────────────
+# Layout
 app.layout = html.Div([
     dcc.Location(id="url"),
     dcc.Interval(id="now-playing-interval", interval=10_000, n_intervals=0),
@@ -177,7 +175,7 @@ app.layout = html.Div([
 ], style={"background": COLORS["bg"], "minHeight": "100vh"})
 
 
-# ── Pages ─────────────────────────────────────────────────────────────────────
+# Pages
 def page_now_playing(n):
     now = get_currently_playing(sp)
 
@@ -497,6 +495,6 @@ def render_page(pathname, time_range, n):
 
 # ── Run ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    print("\n🎵  Starting Spotify Dashboard...")
+    print("\n Starting Spotify Dashboard...")
     print("   Visit http://127.0.0.1:8888\n")
     app.run(debug=True, port=8888)
