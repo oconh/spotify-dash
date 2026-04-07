@@ -1,0 +1,84 @@
+import os
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+from dotenv import load_dotenv
+
+load_dotenv()
+
+SCOPES = "user-top-read user-read-currently-playing user-read-playback-state"
+
+
+def get_spotify_oauth():
+    return SpotifyOAuth(
+        client_id=os.getenv("SPOTIPY_CLIENT_ID"),
+        client_secret=os.getenv("SPOTIPY_CLIENT_SECRET"),
+        redirect_uri=os.getenv("SPOTIPY_REDIRECT_URI"),
+        scope=SCOPES,
+        cache_path=".spotify_cache",
+        open_browser=False,
+    )
+
+
+def get_spotify_client():
+    return spotipy.Spotify(auth_manager=get_spotify_oauth())
+
+
+def get_top_tracks(sp, time_range="medium_term", limit=50):
+    results = sp.current_user_top_tracks(limit=limit, time_range=time_range)
+    return [{
+        "id": item["id"],
+        "name": item["name"],
+        "artist": item["artists"][0]["name"],
+        "album": item["album"]["name"],
+        "image": item["album"]["images"][1]["url"] if item["album"]["images"] else None,
+        "popularity": item["popularity"],
+        "duration_ms": item["duration_ms"],
+        "preview_url": item["preview_url"],
+    } for item in results["items"]]
+
+
+def get_top_artists(sp, time_range="medium_term", limit=50):
+    results = sp.current_user_top_artists(limit=limit, time_range=time_range)
+    return [{
+        "id": item["id"],
+        "name": item["name"],
+        "genres": item["genres"],
+        "popularity": item["popularity"],
+        "followers": item["followers"]["total"],
+        "image": item["images"][1]["url"] if len(item["images"]) > 1 else None,
+    } for item in results["items"]]
+
+
+def get_audio_features(sp, track_ids):
+    features = []
+    for i in range(0, len(track_ids), 100):
+        batch = sp.audio_features(track_ids[i:i + 100])
+        features.extend([f for f in batch if f])
+    return features
+
+
+def get_currently_playing(sp):
+    try:
+        result = sp.current_playback()
+        if result and result.get("item"):
+            item = result["item"]
+            return {
+                "name": item["name"],
+                "artist": item["artists"][0]["name"],
+                "album": item["album"]["name"],
+                "image": item["album"]["images"][0]["url"] if item["album"]["images"] else None,
+                "progress_ms": result.get("progress_ms", 0),
+                "duration_ms": item["duration_ms"],
+                "is_playing": result.get("is_playing", False),
+            }
+    except Exception:
+        pass
+    return None
+
+
+def get_genres_from_artists(artists):
+    genre_counts = {}
+    for artist in artists:
+        for genre in artist["genres"]:
+            genre_counts[genre] = genre_counts.get(genre, 0) + 1
+    return dict(sorted(genre_counts.items(), key=lambda x: x[1], reverse=True))
